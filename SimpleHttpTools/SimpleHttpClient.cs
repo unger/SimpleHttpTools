@@ -15,39 +15,59 @@
             this.httpClient = new HttpClient(handler);
         }
 
-        public string GetStringAsync(Uri requestUri)
+        public bool UseXhr { get; set; }
+
+        public Uri BaseAddress
+        {
+            get
+            {
+                return this.httpClient.BaseAddress;
+            }
+
+            set
+            {
+                this.httpClient.BaseAddress = value;
+            }
+        }
+
+        public string Get(string requestUri)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-            return this.RequestStringAsync(request);
+            return this.RequestAsString(request);
         }
 
-        public string PostXhrStringAsync(Uri requestUri, object postData, string contentType)
+        public string PostJson(string requestUri, object postData)
         {
-            var request = this.GetPostRequestMessage(requestUri, postData, contentType);
-            request.Headers.Add("X-Requested-With", "XMLHttpRequest");
-            return this.RequestStringAsync(request);
+            var request = this.GetPostRequestMessage(requestUri, postData, ContentTypes.Json);
+            return this.RequestAsString(request);
         }
 
-        public string PostStringAsync(Uri requestUri, object postData, string contentType)
+        public string PostForm(string requestUri, object postData)
         {
-            var request = this.GetPostRequestMessage(requestUri, postData, contentType);
-            return this.RequestStringAsync(request);
+            var request = this.GetPostRequestMessage(requestUri, postData, ContentTypes.FormUrlencoded);
+            return this.RequestAsString(request);
         }
 
-        public string RequestStringAsync(HttpRequestMessage request)
+        private string RequestAsString(HttpRequestMessage request)
         {
             var result = this.httpClient.SendAsync(request).Result;
             result.EnsureSuccessStatusCode();
             return result.Content.ReadAsStringAsync().Result;            
         }
 
-        private HttpRequestMessage GetPostRequestMessage(Uri requestUri, object postData, string contentType)
+        private HttpRequestMessage GetPostRequestMessage(string requestUri, object postData, string contentType)
         {
             var contentFactory = new HttpContentFactory();
-            return new HttpRequestMessage(HttpMethod.Post, requestUri)
+            var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
                               {
                                   Content = contentFactory.Create(postData, contentType)
                               };
+            if (this.UseXhr)
+            {
+                request.Headers.Add("X-Requested-With", "XMLHttpRequest");
+            }
+
+            return request;
         }
     }
 }
