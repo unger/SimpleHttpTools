@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="ContentTypes.cs" />
     <Compile Include="HttpContentFactory.cs" />
+    <Compile Include="ISimpleHttpClient.cs" />
     <Compile Include="SimpleHttpClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -4,7 +4,7 @@
     using System.Net;
     using System.Net.Http;
 
-    public class SimpleHttpClient
+    public class SimpleHttpClient : ISimpleHttpClient
     {
         private readonly HttpClient httpClient;
 
