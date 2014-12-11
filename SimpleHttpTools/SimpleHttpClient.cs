@@ -36,6 +36,15 @@
             return this.RequestAsString(request);
         }
 
+        public void Get(string requestUri, Action<string, HttpStatusCode, HttpResponseMessage> callback)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+
+            var response = this.httpClient.SendAsync(request).Result;
+
+            callback(response.Content.ReadAsStringAsync().Result, response.StatusCode, response);
+        }
+
         public string PostJson(string requestUri, object postData)
         {
             var request = this.GetPostRequestMessage(requestUri, postData, ContentTypes.Json);
