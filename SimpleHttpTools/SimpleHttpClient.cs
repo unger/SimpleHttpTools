@@ -33,35 +33,50 @@
         public string Get(string requestUri)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-            return this.RequestAsString(request);
-        }
-
-        public void Get(string requestUri, Action<string, HttpStatusCode, HttpResponseMessage> callback)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-
-            var response = this.httpClient.SendAsync(request).Result;
-
-            callback(response.Content.ReadAsStringAsync().Result, response.StatusCode, response);
+            return this.Execute(request);
         }
 
         public string PostJson(string requestUri, object postData)
         {
             var request = this.GetPostRequestMessage(requestUri, postData, ContentTypes.Json);
-            return this.RequestAsString(request);
+            return this.Execute(request);
         }
 
         public string PostForm(string requestUri, object postData)
         {
             var request = this.GetPostRequestMessage(requestUri, postData, ContentTypes.FormUrlencoded);
-            return this.RequestAsString(request);
+            return this.Execute(request);
         }
 
-        private string RequestAsString(HttpRequestMessage request)
+        public void Get(string requestUri, Action<string, HttpStatusCode, HttpResponseMessage> callback)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            this.Execute(request, callback);
+        }
+
+        public void PostJson(string requestUri, object postData, Action<string, HttpStatusCode, HttpResponseMessage> callback)
+        {
+            var request = this.GetPostRequestMessage(requestUri, postData, ContentTypes.Json);
+            this.Execute(request, callback);
+        }
+
+        public void PostForm(string requestUri, object postData, Action<string, HttpStatusCode, HttpResponseMessage> callback)
+        {
+            var request = this.GetPostRequestMessage(requestUri, postData, ContentTypes.FormUrlencoded);
+            this.Execute(request, callback);
+        }
+
+        private async void Execute(HttpRequestMessage request, Action<string, HttpStatusCode, HttpResponseMessage> callback)
+        {
+            var response = await this.httpClient.SendAsync(request).ConfigureAwait(continueOnCapturedContext: true);
+            callback(response.Content.ReadAsStringAsync().Result, response.StatusCode, response);
+        }
+
+        private string Execute(HttpRequestMessage request)
         {
             var result = this.httpClient.SendAsync(request).Result;
             result.EnsureSuccessStatusCode();
-            return result.Content.ReadAsStringAsync().Result;            
+            return result.Content.ReadAsStringAsync().Result;
         }
 
         private HttpRequestMessage GetPostRequestMessage(string requestUri, object postData, string contentType)
